@@ -658,8 +658,8 @@ open class WebSocket : NSObject, StreamDelegate, WebSocketClient, WSStreamDelega
             let settings = SSLSettings(useSSL: useSSL,
                                        disableCertValidation: disableSSLCertValidation,
                                        overrideTrustHostname: overrideTrustHostname,
-                                       desiredTrustHostname: desiredTrustHostname),
-                                       sslClientCertificate: sslClientCertificate
+                                       desiredTrustHostname: desiredTrustHostname,
+                                       sslClientCertificate: sslClientCertificate)
         #else
             let settings = SSLSettings(useSSL: useSSL,
                                        disableCertValidation: disableSSLCertValidation,
