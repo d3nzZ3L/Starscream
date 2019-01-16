@@ -590,8 +590,8 @@ open class WebSocket : NSObject, StreamDelegate, WebSocketClient, WSStreamDelega
         }
         request.setValue(headerWSUpgradeValue, forHTTPHeaderField: headerWSUpgradeName)
         request.setValue(headerWSConnectionValue, forHTTPHeaderField: headerWSConnectionName)
-        headerSecKey = generateWebSocketKey()
         request.setValue(headerWSVersionValue, forHTTPHeaderField: headerWSVersionName)
+        headerSecKey = try! generateWebSocketKey()
         request.setValue(headerSecKey, forHTTPHeaderField: headerWSKeyName)
         
         if enableCompression {
@@ -628,16 +628,16 @@ open class WebSocket : NSObject, StreamDelegate, WebSocketClient, WSStreamDelega
     /**
      Generate a WebSocket key as needed in RFC.
      */
-    private func generateWebSocketKey() -> String {
-        var key = ""
-        let seed = 16
-        for _ in 0..<seed {
-            let uni = UnicodeScalar(UInt32(97 + arc4random_uniform(25)))
-            key += "\(Character(uni!))"
+    private func generateWebSocketKey() throws -> String {
+        let kSocketKeyByteLength = 16
+        var randomData = Data(count: kSocketKeyByteLength)
+        try randomData.withUnsafeMutableBytes { (bytes: UnsafeMutablePointer<UInt8>) throws -> Void in
+            guard SecRandomCopyBytes(kSecRandomDefault, kSocketKeyByteLength, bytes) == errSecSuccess else {
+                throw WSError(type: .osError, message: "unable to generate random bytes", code: 0)
+            }
         }
-        let data = key.data(using: String.Encoding.utf8)
-        let baseKey = data?.base64EncodedString(options: NSData.Base64EncodingOptions(rawValue: 0))
-        return baseKey!
+
+        return randomData.base64EncodedString()
     }
 
     /**
